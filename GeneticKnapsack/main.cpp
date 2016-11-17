@@ -34,7 +34,6 @@ search of the possible solution space.
 */
 
 
-
 #include <iostream>
 #include <vector>
 #include "item.h"
@@ -48,8 +47,17 @@ std::vector<knapsack> mutate_population(std::vector<knapsack>& Population);
 
 int main()
 {
+    // Parameters:
+    
+    const long number_of_items = 1000; //
+    const long initial_size_of_population = 100; // little effect on running time - need enough 'diversity'
+    const long capacity_of_knapsacks = 100; //
+    const long number_of_generations = 10; // linear effect on running time
+    const long target_size_of_population = 1000; // quadratic effect on running time
+    const long number_of_random_knapsacks = 1000; //
+    
     //The shelf object represents the items that we can choice from.
-    shelf Shelf(1000);
+    shelf Shelf(number_of_items);
     
     
     std::vector<knapsack> Population;
@@ -58,23 +66,23 @@ int main()
     
     
     // Random initialization:
-    for (long i = 0; i < 100; ++i)
+    for (long i = 0; i < initial_size_of_population; ++i)
     {
-        knapsack A(100, &Shelf);
+        knapsack A(capacity_of_knapsacks, &Shelf);
         A.fill_up();
         Population.push_back( A );
     }
     
     // Each iteration of this loop represents the passing of a generation of solutions.
-    for (long i = 0; i < 20; ++i)
+    for (long i = 0; i < number_of_generations; ++i)
     {
-        while (Population.size() < 1000)
+        while (Population.size() < target_size_of_population - 1) //make sure we can't slip through
         {
             Population = produce_offspring(Population);
             Population = mutate_population(Population);
         }
     
-        while (Population.size() > 1000)
+        while (Population.size() > target_size_of_population + 1) //make sure we can't slip through
         {
             Population = natural_selection(Population);
         }
@@ -100,9 +108,9 @@ int main()
     begin = std::chrono::high_resolution_clock::now();
     best_score = 0;
     
-    for (long i = 0; i < 5000000; ++i)
+    for (long i = 0; i < number_of_random_knapsacks; ++i)
     {
-        knapsack A(100, &Shelf);
+        knapsack A(capacity_of_knapsacks, &Shelf);
         A.fill_up();
         if (A.get_value() > best_score)
             best_score = A.get_value();
@@ -114,6 +122,8 @@ int main()
     std::cout << "Random best:  " << best_score << std::endl;
     std::cout << "Random time:  " << (end-begin).count() << std::endl;
     
+    
+    // greedy
     
     
     
@@ -172,7 +182,7 @@ std::vector<knapsack> mutate_population(std::vector<knapsack>& Population)
     
     for (long i = 0; i < N; ++i)
     {
-        Population[i].mutate(2);
+        Population[i].mutate(2); // 2 is the mutation rate
     }
     
     return Population;
