@@ -6,33 +6,7 @@
 //  Copyright (c) 2016 RS. All rights reserved.
 //
 
-/* Genetic algorithm approach to the knapsack problem:
- 
-Genetic algorithms are one of the so called bio-algorithms that are inspired by biological processes.
-Genetic algorithms are inspired by the passing of genetics from parent to child; mutation; and natural
-selection - together these process are often called evolution!
- 
-The algorithm has 4 main parts.
- 
-Step 1: Randomly intiate a population of solutions
-Step 2: Produce offspring: we find 'a way' to combine two (or more) solutions
-Step 3: We randomly mutate our solutions
-Step 4: We select the best solutions and return to step 2
-
-In the demonstration code below a genetic algorithm is used to find solutions for the knapsack problem.
-The best solution is compared to the best solution from running random search for around the same amount
-of time.
- 
-Sample output:
- Genetic best: 320
- Genetic time: 112502093131
- Random best:  195
- Random time:  120691586335
-
-The genetic algorithm seriously outperforms random search. Essentially, the algorithm is an intelligent
-search of the possible solution space.
-*/
-
+// Genetic algorithm approach to the knapsack problem:
 
 #include <iostream>
 #include <vector>
@@ -45,20 +19,20 @@ std::vector<knapsack> natural_selection(std::vector<knapsack>& Population);
 std::vector<knapsack> produce_offspring(std::vector<knapsack>& Population);
 std::vector<knapsack> mutate_population(std::vector<knapsack>& Population);
 
+
 int main()
 {
     // Parameters:
     
     const long number_of_items = 1000; //
-    const long initial_size_of_population = 100; // little effect on running time - need enough 'diversity'
+    const long initial_size_of_population = 1000; // little effect on running time - need enough 'diversity'
     const long capacity_of_knapsacks = 100; //
-    const long number_of_generations = 10; // linear effect on running time
-    const long target_size_of_population = 1000; // quadratic effect on running time
-    const long number_of_random_knapsacks = 1000; //
+    const long number_of_generations = 20; // linear effect on running time
+    const long target_size_of_population = 2000; // quadratic effect on running time
+    const long number_of_random_knapsacks = 50000000; //
     
     //The shelf object represents the items that we can choice from.
     shelf Shelf(number_of_items);
-    
     
     std::vector<knapsack> Population;
     
@@ -76,6 +50,10 @@ int main()
     // Each iteration of this loop represents the passing of a generation of solutions.
     for (long i = 0; i < number_of_generations; ++i)
     {
+        
+        // uncomment to keep track of progress
+        std::cout << "Generation: " << i << std::endl;
+        
         while (Population.size() < target_size_of_population - 1) //make sure we can't slip through
         {
             Population = produce_offspring(Population);
@@ -121,9 +99,6 @@ int main()
     
     std::cout << "Random best:  " << best_score << std::endl;
     std::cout << "Random time:  " << (end-begin).count() << std::endl;
-    
-    
-    // greedy
     
     
     
@@ -187,5 +162,43 @@ std::vector<knapsack> mutate_population(std::vector<knapsack>& Population)
     
     return Population;
     
+}
+
+
+knapsack greedy(long capacity, shelf & Shelf)
+{
+    std::vector<float> A;
+    
+    long N = Shelf.size();
+    
+    for (long i = 0; i < N; ++i)
+    {
+        A.push_back(Shelf.items[i].get_density());
+    }
+    
+    //insertion sort - descending
+    for (int i = 1; i < N; ++i)
+    {
+        for (int j = i; j > 0 && A[j] > A[j-1]  ; --j)
+        {
+            std::swap(A[j], A[j-1]);
+        }
+    }
+    
+    knapsack B(capacity, &Shelf);
+    
+    for(long i = 0; i < N; ++i)
+    {
+        for(long j = 0; j < N; j++)
+        {
+            if (Shelf.items[j].get_density() == A[i])
+            {
+                B.add(j);
+            }
+        }
+    }
+    
+    
+    return B;
 }
 
